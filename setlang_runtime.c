@@ -123,6 +123,10 @@ void set_print(set_t* set) {
     printf("}\n");
 }
 
+bool set_is_empty(set_t* set) {
+    return set->size == 0;
+}
+
 collection_t* collection_new() {
     collection_t* collection = malloc(sizeof(collection_t));
     collection->size = 0;

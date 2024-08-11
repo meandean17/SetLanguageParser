@@ -37,10 +37,11 @@ output "s3 after adding [9, 10]: " s3;
 
 if (s1) {
     output "s1 is not empty";
-    output "empty set is empty";
-
 }
 
+if (!empty) {
+    output "empty set is empty";
+}
 
 s1 = [];
 output "s1 after setting to empty set: " s1;

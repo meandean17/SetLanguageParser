@@ -101,7 +101,11 @@ statement: declaration { $$ = $1; }
             | for_statement { $$ = $1; }
             | input_statement { $$ = $1; }
             | output_statement { $$ = $1; }
-            | LBRACE statement_list RBRACE
+            | LBRACE statement_list RBRACE {
+                $$ = malloc(strlen($2) + 3);
+                sprintf($$, "\n%s\n", $2);
+                free($2);
+            }
             | expression SEMICOLON {
                 $$ = malloc(strlen($1) + 3);
                 sprintf($$, "%s;", $1);
@@ -202,8 +206,14 @@ assignment: IDENTIFIER ASSIGN expression SEMICOLON {
                         $$ = malloc(strlen($3) + 2);
                         sprintf($$, "%s;", $3);
                     } else if (sym->type == TYPE_SET && type == TYPE_SET) {
-                        $$ = malloc(strlen($1) + strlen($3) + 50);
-                        sprintf($$, "set_free(%s);\n%s = %s;", $1, $1, $3);
+                        //only free if the variable is not used in the expression
+                        if (strstr($3, $1) == NULL) {
+                            $$ = malloc(strlen($1) + strlen($3) + 50);
+                            sprintf($$, "set_free(%s);\n%s = %s;", $1, $1, $3);
+                        } else {
+                            $$ = malloc(strlen($1) + strlen($3) + 5);
+                            sprintf($$, "%s = %s;", $1, $3);
+                        }
                     } else {
                         $$ = malloc(strlen($1) + strlen($3) + 5);
                         sprintf($$, "%s = %s;", $1, $3);
@@ -215,44 +225,30 @@ assignment: IDENTIFIER ASSIGN expression SEMICOLON {
             ;
 
 if_statement: IF LPAREN condition RPAREN statement {
-                char* label = new_label();
-                $$ = malloc(strlen($3) + strlen($5) + strlen(label) + 50);
-                sprintf($$, "if (!(%s)) goto %s;\n%s\n%s:", $3, label, $5, label);
+                $$ = malloc(strlen($3) + strlen($5) + 20);
+                sprintf($$, "if (%s) {\n%s\n}", $3, $5);
                 free($3);
                 free($5);
-                free(label);
+            }
+            | IF LPAREN condition RPAREN LBRACE statement_list RBRACE {
+                $$ = malloc(strlen($3) + strlen($6) + 20);
+                sprintf($$, "if (%s) {\n%s\n}", $3, $6);
+                free($3);
+                free($6);
             }
             | IF LPAREN condition RPAREN statement ELSE statement {
-                char* else_label = new_label();
-                char* end_label = new_label();
-                $$ = malloc(strlen($3) + strlen($5) + strlen($7) + strlen(else_label) + strlen(end_label) + 100);
-                sprintf($$, "if (!(%s)) goto %s;\n%s\ngoto %s;\n%s:\n%s\n%s",
-                        $3, else_label, $5, end_label, else_label, $7, end_label);
+                $$ = malloc(strlen($3) + strlen($5) + strlen($7) + 30);
+                sprintf($$, "if (%s) {\n%s\n} else {\n%s\n}", $3, $5, $7);
                 free($3);
                 free($5);
                 free($7);
-                free(else_label);
-                free(end_label);
-            }
-            | IF LPAREN condition RPAREN LBRACE statement_list RBRACE {
-                char* label = new_label();
-                $$ = malloc(strlen($3) + strlen($6) + strlen(label) + 50);
-                sprintf($$, "if (!(%s)) goto %s;\n{\n%s\n}\n%s:", $3, label, $6, label);
-                free($3);
-                free($6);
-                free(label);
             }
             | IF LPAREN condition RPAREN LBRACE statement_list RBRACE ELSE LBRACE statement_list RBRACE {
-                char *else_label = new_label();
-                char *end_label = new_label();
-                $$ = malloc(strlen($3) + strlen($6) + strlen($10) + strlen(else_label) + strlen(end_label) + 100);
-                sprintf($$, "if (!(%s)) goto %s;\n{\n%s\n}\ngoto %s;\n%s:\n{\n%s\n}\n%s:", 
-                        $3, else_label, $6, end_label, else_label, $10, end_label);
+                $$ = malloc(strlen($3) + strlen($6) + strlen($10) + 40);
+                sprintf($$, "if (%s) {\n%s\n} else {\n%s\n}", $3, $6, $10);
                 free($3);
                 free($6);
                 free($10);
-                free(else_label);
-                free(end_label);
             }
             ;
 
@@ -369,73 +365,6 @@ output_item: expression {
             }
             ;
 
-// set_operation: IDENTIFIER AND IDENTIFIER {
-//                 Symbol* sym1 = lookup_symbol($1);
-//                 Symbol* sym2 = lookup_symbol($3);
-//                 if (sym1 == NULL || sym2 == NULL) {
-//                     yyerror("Undefined variable");
-//                 } else if (sym1->type != TYPE_SET || sym2->type != TYPE_SET) {
-//                     yyerror("Variable is not a set");
-//                 } else {
-//                     $$ = malloc(strlen($1) + strlen($3) + 30);
-//                     sprintf($$, "set_intersection(%s, %s)", $1, $3);
-//                 }
-//                 free($1);
-//                 free($3);
-//             }
-//             | IDENTIFIER PLUS IDENTIFIER {
-//                 Symbol* sym1 = lookup_symbol($1);
-//                 Symbol* sym2 = lookup_symbol($3);
-//                 if (sym1 == NULL || sym2 == NULL) {
-//                     yyerror("Undefined variable");
-//                 } else if (sym1->type != TYPE_SET || sym2->type != TYPE_SET) {
-//                     yyerror("Variable is not a set");
-//                 } else {
-//                     $$ = malloc(strlen($1) + strlen($3) + 30);
-//                     sprintf($$, "set_union(%s, %s)", $1, $3);
-//                 }
-//                 free($1);
-//                 free($3);
-//             }
-//             | IDENTIFIER MINUS IDENTIFIER {
-//                 Symbol* sym1 = lookup_symbol($1);
-//                 Symbol* sym2 = lookup_symbol($3);
-//                 if (sym1 == NULL || sym2 == NULL) {
-//                     yyerror("Undefined variable");
-//                 } else if (sym1->type != TYPE_SET || sym2->type != TYPE_SET) {
-//                     yyerror("Variable is not a set");
-//                 } else {
-//                     $$ = malloc(strlen($1) + strlen($3) + 30);
-//                     sprintf($$, "set_difference(%s, %s)", $1, $3);
-//                 }
-//                 free($1);
-//                 free($3);
-//             }
-//             | SIZE IDENTIFIER {
-//                 Symbol* sym = lookup_symbol($2);
-//                 if (sym == NULL) {
-//                     yyerror("Undefined variable");
-//                 } else if (sym->type != TYPE_SET) {
-//                     yyerror("Size operation can only be applied to sets/collections");
-//                 } else {
-//                     $$ = malloc(strlen($2) + 20);
-//                     sprintf($$, "set_size(%s)", $2);
-//                 }
-//             }
-//             ;
-
-// collection_operation: IDENTIFIER AND IDENTIFIER {
-//                         Symbol* sym1 = lookup_symbol($1);
-//                         Symbol* sym2 = lookup_symbol($3);
-//                         if (sym1 == NULL || sym2 == NULL) {
-//                             yyerror("Undefined variable");
-//                         } else if (sym1->type != TYPE_COLLECTION || sym2->type != TYPE_COLLECTION) {
-//                             yyerror("Variable is not a collection");
-//                         } else {
-//                             $$ = malloc(strlen($1) + strlen($3) + 30);
-//                             sprintf($$, "collection_intersection(%s, %s)", $1, $3);
-//                         }
-// }
 
 expression_list: expression { $$ = $1; }
                 | expression_list COMMA expression {
@@ -627,7 +556,7 @@ condition: expression EQUAL expression {
             }
             | expression {
                 Symbol* sym = lookup_symbol($1);
-                if (sym && sym->type == lookup_symbol($1)) {
+                if (sym && sym->type == TYPE_SET) {
                     $$ = malloc(strlen($1) + 20);
                     sprintf($$, "!set_is_empty(%s)", $1);
                 } else {
