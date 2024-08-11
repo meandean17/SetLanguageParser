@@ -84,7 +84,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 50 "setlang.y"
+#line 52 "setlang.y"
 
     int ival;
     char *sval;

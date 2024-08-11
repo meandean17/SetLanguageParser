@@ -31,5 +31,6 @@ collection_t* collection_intersection(collection_t* collection1, collection_t* c
 collection_t* collection_difference(collection_t* collection1, collection_t* collection2);
 void collection_remove(collection_t* collection, char* value);
 void collection_print(collection_t* collection);
+bool collection_is_empty(collection_t* collection);
 
 #endif

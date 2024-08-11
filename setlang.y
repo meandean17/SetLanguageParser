@@ -37,6 +37,8 @@
             return TYPE_COLLECTION;
         } else if (expr[0] >= '0' && expr[0] <= '9') {
             return TYPE_INT;
+        } else if (is_string(expr)) {
+            return TYPE_STR;
         } else {
             Symbol* sym = lookup_symbol(expr);
             if (sym != NULL) {
@@ -129,9 +131,11 @@ declaration: INT { current_type = TYPE_INT; } identifier_list SEMICOLON {
                 printf("Declaring SET: %s\n", $3);  // Debug print
                 char* temp = strdup($3);
                 char* token = strtok(temp, ",");
+                printf("Temp: %s\n", temp);
                 $$ = malloc(1);
                 $$[0] = '\0';
                 while (token != NULL) {
+                    printf("Debug: Token: %s\n", token);
                     char* trimmed = token;
                     while (*trimmed == ' ') trimmed++; // trim leading spaces
                     char* end = trimmed + strlen(trimmed) - 1;
@@ -150,9 +154,14 @@ declaration: INT { current_type = TYPE_INT; } identifier_list SEMICOLON {
                 free(temp);
                 free($3);
             }
-            | COLLECTION { current_type = TYPE_COLLECTION; } identifier_list SEMICOLON {
+            | COLLECTION { 
+                current_type = TYPE_COLLECTION; 
+                printf("Debug: Entering COLLECTION rule");  // Debug print
+            } identifier_list SEMICOLON {
+                printf("Debug: Finishing COLLECTION rule. Identifier list: %s\n", $3);
                 printf("Declaring COLLECTION: %s\n", $3);  // Debug print
                 char* temp = strdup($3);
+                printf("Temp: %s\n", temp);
                 char* token = strtok(temp, ",");
                 $$ = malloc(1);
                 $$[0] = '\0';
@@ -163,10 +172,11 @@ declaration: INT { current_type = TYPE_INT; } identifier_list SEMICOLON {
                     while (end > trimmed && *end == ' ') end--; // trim trailing spaces
                     *(end + 1) = '\0';
 
-                    char* new_decl = malloc(strlen(trimmed) + 30);
+                    char* new_decl = malloc(strlen(trimmed) + 40);
                     sprintf(new_decl, "collection_t* %s = collection_new();\n", trimmed);
 
-                    $$ = realloc($$, strlen($$) + strlen(new_decl) + 1);
+                    $$ = realloc($$, strlen($$) + strlen(new_decl) + 10);
+                    printf("Debug: new_decl: %s\n", new_decl);
                     strcat($$, new_decl);
 
                     free(new_decl);
@@ -174,6 +184,7 @@ declaration: INT { current_type = TYPE_INT; } identifier_list SEMICOLON {
                 }
                 free(temp);
                 free($3);
+                printf("Debug: COLLECTION declaration completed\n");
             }
             ;
 
@@ -214,7 +225,16 @@ assignment: IDENTIFIER ASSIGN expression SEMICOLON {
                             $$ = malloc(strlen($1) + strlen($3) + 5);
                             sprintf($$, "%s = %s;", $1, $3);
                         }
-                    } else {
+                    } else if (sym->type == TYPE_COLLECTION && type == TYPE_COLLECTION) { 
+                        if (strstr($3, $1) == NULL) {
+                            $$ = malloc(strlen($1) + strlen($3) + 50);
+                            sprintf($$, "collection_free(%s);\n%s = %s;", $1, $1, $3);
+                        } else {
+                            $$ = malloc(strlen($1) + strlen($3) + 5);
+                            sprintf($$, "%s = %s;", $1, $3);
+                        }
+                    }
+                     else {
                         $$ = malloc(strlen($1) + strlen($3) + 5);
                         sprintf($$, "%s = %s;", $1, $3);
                     }
@@ -314,6 +334,11 @@ output_statement: OUTPUT output_list SEMICOLON {
                             set_name[strlen(set_name) - 1] = '\0'; // remove trailing ')'
                             sprintf(temp, "printf(\"%%d\", set_size(%s));\n", set_name);
                             free(set_name);
+                        }  else if (strstr(token, "collection_size") != NULL) { // Collection size
+                            char *collection_name = strdup(token + 16); // skip "collection_size("
+                            collection_name[strlen(collection_name) - 1] = '\0'; // remove trailing ')'
+                            sprintf(temp, "printf(\"%%d\", collection_size(%s));\n", collection_name);
+                            free(collection_name);
                         } else {
                             Symbol *sym = lookup_symbol(token);
                             if (sym == NULL) {
@@ -351,7 +376,7 @@ output_item: expression {
                     $$ = $1;
                 } else {
                     Symbol *sym = lookup_symbol($1);
-                    if (sym && sym->type == TYPE_SET) {
+                    if (sym && sym->type == TYPE_SET || sym->type == TYPE_COLLECTION) {
                         $$ = strdup($1);
                     } else {
                         $$ = $1;
@@ -359,8 +384,16 @@ output_item: expression {
                 }
             }
             | SIZE expression SIZE {
-                $$ = malloc(strlen($2) + 30);
-                sprintf($$, "set_size(%s)", $2);
+                Symbol *sym = lookup_symbol($2);
+                if(sym && sym->type == TYPE_SET) {
+                    $$ = malloc(strlen($2) + 20);
+                    sprintf($$, "set_size(%s)", $2);
+                } else if(sym && sym->type == TYPE_COLLECTION) {
+                    $$ = malloc(strlen($2) + 30);
+                    sprintf($$, "collection_size(%s)", $2);
+                } else {
+                    yyerror("SIZE can only be applied to sets/collections");
+                }
                 free($2);
             }
             ;
@@ -431,11 +464,15 @@ expression: INTEGER {
                 } else if (type1 == TYPE_SET && type2 == TYPE_INT) {
                     sprintf($$, "set_remove(%s, %s)", $1, $3);
                 } else if (type1 == TYPE_COLLECTION && type2 == TYPE_STR) {
-                    sprintf($$, "collection_remove(%s, %s)", $1, $3);
+                    if(is_string($3)) {
+                        sprintf($$, "collection_remove(%s, %s)", $1, $3);
+                    } else {
+                        sprintf($$, "collection_remove(%s,%s)", $1, $3);
+                    }
                 } else if (type1 == TYPE_INT && type2 == TYPE_INT) {
                     sprintf($$, "%s - %s", $1, $3);
                 } else {
-                    yyerror("MINUS operation not supported for these types");
+                    yyerror("MINUS operation not supported for these types ");
                 }
                 free($1);
                 free($3);
@@ -481,8 +518,12 @@ set_expression: LBRACKET RBRACKET {
                 }
                 ;
         
-collection_expression: LBRACE RBRACE { $$ = strdup("collection_new()"); }
+collection_expression: LBRACE RBRACE { 
+                        $$ = strdup("collection_new()"); 
+                        printf("Debug: Created empty collection\n");
+                    }
                     | LBRACE element_list RBRACE {
+                        printf("Debug: Collection expression with elements\n");
                         char* temp = malloc(strlen($2) + 50); // increased buffer size
                         int count = 1; // start with 1 for the first element
                         for (int i = 0; $2[i] != '\0'; i++) {
@@ -492,6 +533,7 @@ collection_expression: LBRACE RBRACE { $$ = strdup("collection_new()"); }
                         }
                         sprintf(temp, "collection_from_array(%d, %s)", count, $2);
                         $$ = temp;
+                        printf("Created collection: %s\n", $$);
                         free($2);
                     }
                     ;
@@ -559,6 +601,9 @@ condition: expression EQUAL expression {
                 if (sym && sym->type == TYPE_SET) {
                     $$ = malloc(strlen($1) + 20);
                     sprintf($$, "!set_is_empty(%s)", $1);
+                } else if (sym && sym->type == TYPE_COLLECTION) {
+                    $$ = malloc(strlen($1) + 30);
+                    sprintf($$, "!collection_is_empty(%s)", $1);
                 } else {
                     $$ = strdup($1);
                 }
@@ -618,8 +663,12 @@ int main(int argc, char **argv) {
     printf("Parsing finished with result: %d.\n", result);
     fprintf(yyout, "// Cleanup\n");
     for (int i = 0; i < table_size; i++) {
-        if (symbol_table[i] && symbol_table[i]->type == TYPE_SET) {
-            fprintf(yyout, "set_free(%s);\n", symbol_table[i]->name);
+        if(symbol_table[i]) {
+            if (symbol_table[i]->type == TYPE_SET) {
+                fprintf(yyout, "set_free(%s);\n", symbol_table[i]->name);
+            } else if (symbol_table[i]->type == TYPE_COLLECTION) {
+                fprintf(yyout, "collection_free(%s);\n", symbol_table[i]->name);
+            }
         }
     }
     //Close main function

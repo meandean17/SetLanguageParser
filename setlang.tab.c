@@ -108,6 +108,8 @@
             return TYPE_COLLECTION;
         } else if (expr[0] >= '0' && expr[0] <= '9') {
             return TYPE_INT;
+        } else if (is_string(expr)) {
+            return TYPE_STR;
         } else {
             Symbol* sym = lookup_symbol(expr);
             if (sym != NULL) {
@@ -119,7 +121,7 @@
 
 
 /* Line 189 of yacc.c  */
-#line 123 "setlang.tab.c"
+#line 125 "setlang.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -191,7 +193,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 50 "setlang.y"
+#line 52 "setlang.y"
 
     int ival;
     char *sval;
@@ -200,7 +202,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 204 "setlang.tab.c"
+#line 206 "setlang.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -212,7 +214,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 216 "setlang.tab.c"
+#line 218 "setlang.tab.c"
 
 #ifdef short
 # undef short
@@ -524,13 +526,13 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    82,    82,    88,    89,    97,    98,    99,   100,   101,
-     102,   103,   104,   109,   116,   116,   122,   122,   128,   128,
-     153,   153,   180,   186,   196,   227,   233,   239,   246,   255,
-     268,   289,   304,   340,   341,   349,   361,   378,   382,   383,
-     389,   403,   423,   443,   449,   455,   460,   461,   464,   468,
-     484,   485,   499,   503,   512,   518,   524,   530,   536,   542,
-     547,   552,   557,   569
+       0,    84,    84,    90,    91,    99,   100,   101,   102,   103,
+     104,   105,   106,   111,   118,   118,   124,   124,   130,   130,
+     157,   157,   191,   197,   207,   247,   253,   259,   266,   275,
+     288,   309,   324,   365,   366,   374,   386,   411,   415,   416,
+     422,   436,   456,   480,   486,   492,   497,   498,   501,   505,
+     521,   525,   541,   545,   554,   560,   566,   572,   578,   584,
+     589,   594,   599,   614
 };
 #endif
 
@@ -1546,7 +1548,7 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 82 "setlang.y"
+#line 84 "setlang.y"
     { 
         printf("Completed parsing program\n");
         fprintf(yyout, "%s", (yyvsp[(1) - (1)].code));
@@ -1556,14 +1558,14 @@ yyreduce:
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 88 "setlang.y"
+#line 90 "setlang.y"
     { (yyval.code) = (yyvsp[(1) - (1)].code);;}
     break;
 
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 89 "setlang.y"
+#line 91 "setlang.y"
     {
                     (yyval.code) = malloc(strlen((yyvsp[(1) - (2)].code)) + strlen((yyvsp[(2) - (2)].code)) + 2);
                     sprintf((yyval.code), "%s\n%s", (yyvsp[(1) - (2)].code), (yyvsp[(2) - (2)].code));
@@ -1575,56 +1577,56 @@ yyreduce:
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 97 "setlang.y"
+#line 99 "setlang.y"
     { (yyval.code) = (yyvsp[(1) - (1)].code); ;}
     break;
 
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 98 "setlang.y"
+#line 100 "setlang.y"
     { (yyval.code) = (yyvsp[(1) - (1)].code); ;}
     break;
 
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 99 "setlang.y"
+#line 101 "setlang.y"
     { (yyval.code) = (yyvsp[(1) - (1)].code); ;}
     break;
 
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 100 "setlang.y"
+#line 102 "setlang.y"
     { (yyval.code) = (yyvsp[(1) - (1)].code); ;}
     break;
 
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 101 "setlang.y"
+#line 103 "setlang.y"
     { (yyval.code) = (yyvsp[(1) - (1)].code); ;}
     break;
 
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 102 "setlang.y"
+#line 104 "setlang.y"
     { (yyval.code) = (yyvsp[(1) - (1)].code); ;}
     break;
 
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 103 "setlang.y"
+#line 105 "setlang.y"
     { (yyval.code) = (yyvsp[(1) - (1)].code); ;}
     break;
 
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 104 "setlang.y"
+#line 106 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(2) - (3)].code)) + 3);
                 sprintf((yyval.code), "\n%s\n", (yyvsp[(2) - (3)].code));
@@ -1635,7 +1637,7 @@ yyreduce:
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 109 "setlang.y"
+#line 111 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (2)].code)) + 3);
                 sprintf((yyval.code), "%s;", (yyvsp[(1) - (2)].code));
@@ -1646,14 +1648,14 @@ yyreduce:
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 116 "setlang.y"
+#line 118 "setlang.y"
     { current_type = TYPE_INT; ;}
     break;
 
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 116 "setlang.y"
+#line 118 "setlang.y"
     {
                 printf("Declaring INT: %s\n", (yyvsp[(3) - (4)].code));  // Debug print
                 (yyval.code) = malloc(strlen((yyvsp[(3) - (4)].code)) + 7);
@@ -1665,14 +1667,14 @@ yyreduce:
   case 16:
 
 /* Line 1455 of yacc.c  */
-#line 122 "setlang.y"
+#line 124 "setlang.y"
     { current_type = TYPE_STR; ;}
     break;
 
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 122 "setlang.y"
+#line 124 "setlang.y"
     {
                 printf("Declaring STR: %s\n", (yyvsp[(3) - (4)].code));  // Debug print
                 (yyval.code) = malloc(strlen((yyvsp[(3) - (4)].code)) + 15);
@@ -1684,21 +1686,23 @@ yyreduce:
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 128 "setlang.y"
+#line 130 "setlang.y"
     { current_type = TYPE_SET; ;}
     break;
 
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 128 "setlang.y"
+#line 130 "setlang.y"
     {
                 printf("Declaring SET: %s\n", (yyvsp[(3) - (4)].code));  // Debug print
                 char* temp = strdup((yyvsp[(3) - (4)].code));
                 char* token = strtok(temp, ",");
+                printf("Temp: %s\n", temp);
                 (yyval.code) = malloc(1);
                 (yyval.code)[0] = '\0';
                 while (token != NULL) {
+                    printf("Debug: Token: %s\n", token);
                     char* trimmed = token;
                     while (*trimmed == ' ') trimmed++; // trim leading spaces
                     char* end = trimmed + strlen(trimmed) - 1;
@@ -1722,17 +1726,22 @@ yyreduce:
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 153 "setlang.y"
-    { current_type = TYPE_COLLECTION; ;}
+#line 157 "setlang.y"
+    { 
+                current_type = TYPE_COLLECTION; 
+                printf("Debug: Entering COLLECTION rule");  // Debug print
+            ;}
     break;
 
   case 21:
 
 /* Line 1455 of yacc.c  */
-#line 153 "setlang.y"
+#line 160 "setlang.y"
     {
+                printf("Debug: Finishing COLLECTION rule. Identifier list: %s\n", (yyvsp[(3) - (4)].code));
                 printf("Declaring COLLECTION: %s\n", (yyvsp[(3) - (4)].code));  // Debug print
                 char* temp = strdup((yyvsp[(3) - (4)].code));
+                printf("Temp: %s\n", temp);
                 char* token = strtok(temp, ",");
                 (yyval.code) = malloc(1);
                 (yyval.code)[0] = '\0';
@@ -1743,10 +1752,11 @@ yyreduce:
                     while (end > trimmed && *end == ' ') end--; // trim trailing spaces
                     *(end + 1) = '\0';
 
-                    char* new_decl = malloc(strlen(trimmed) + 30);
+                    char* new_decl = malloc(strlen(trimmed) + 40);
                     sprintf(new_decl, "collection_t* %s = collection_new();\n", trimmed);
 
-                    (yyval.code) = realloc((yyval.code), strlen((yyval.code)) + strlen(new_decl) + 1);
+                    (yyval.code) = realloc((yyval.code), strlen((yyval.code)) + strlen(new_decl) + 10);
+                    printf("Debug: new_decl: %s\n", new_decl);
                     strcat((yyval.code), new_decl);
 
                     free(new_decl);
@@ -1754,13 +1764,14 @@ yyreduce:
                 }
                 free(temp);
                 free((yyvsp[(3) - (4)].code));
+                printf("Debug: COLLECTION declaration completed\n");
             ;}
     break;
 
   case 22:
 
 /* Line 1455 of yacc.c  */
-#line 180 "setlang.y"
+#line 191 "setlang.y"
     {
                     if (!insert_symbol((yyvsp[(1) - (1)].sval), current_type)) {
                         yyerror("Symbol already defined");
@@ -1772,7 +1783,7 @@ yyreduce:
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 186 "setlang.y"
+#line 197 "setlang.y"
     {
                     if (!insert_symbol((yyvsp[(3) - (3)].sval), current_type)) {
                         yyerror("Symbol already defined");
@@ -1786,7 +1797,7 @@ yyreduce:
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 196 "setlang.y"
+#line 207 "setlang.y"
     {
                 printf("Debug: Assigning to: %s\n", (yyvsp[(1) - (4)].sval));  // Debug print
                 printf("Expression: %s\n", (yyvsp[(3) - (4)].code));  // Debug print
@@ -1808,7 +1819,16 @@ yyreduce:
                             (yyval.code) = malloc(strlen((yyvsp[(1) - (4)].sval)) + strlen((yyvsp[(3) - (4)].code)) + 5);
                             sprintf((yyval.code), "%s = %s;", (yyvsp[(1) - (4)].sval), (yyvsp[(3) - (4)].code));
                         }
-                    } else {
+                    } else if (sym->type == TYPE_COLLECTION && type == TYPE_COLLECTION) { 
+                        if (strstr((yyvsp[(3) - (4)].code), (yyvsp[(1) - (4)].sval)) == NULL) {
+                            (yyval.code) = malloc(strlen((yyvsp[(1) - (4)].sval)) + strlen((yyvsp[(3) - (4)].code)) + 50);
+                            sprintf((yyval.code), "collection_free(%s);\n%s = %s;", (yyvsp[(1) - (4)].sval), (yyvsp[(1) - (4)].sval), (yyvsp[(3) - (4)].code));
+                        } else {
+                            (yyval.code) = malloc(strlen((yyvsp[(1) - (4)].sval)) + strlen((yyvsp[(3) - (4)].code)) + 5);
+                            sprintf((yyval.code), "%s = %s;", (yyvsp[(1) - (4)].sval), (yyvsp[(3) - (4)].code));
+                        }
+                    }
+                     else {
                         (yyval.code) = malloc(strlen((yyvsp[(1) - (4)].sval)) + strlen((yyvsp[(3) - (4)].code)) + 5);
                         sprintf((yyval.code), "%s = %s;", (yyvsp[(1) - (4)].sval), (yyvsp[(3) - (4)].code));
                     }
@@ -1821,7 +1841,7 @@ yyreduce:
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 227 "setlang.y"
+#line 247 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(3) - (5)].code)) + strlen((yyvsp[(5) - (5)].code)) + 20);
                 sprintf((yyval.code), "if (%s) {\n%s\n}", (yyvsp[(3) - (5)].code), (yyvsp[(5) - (5)].code));
@@ -1833,7 +1853,7 @@ yyreduce:
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 233 "setlang.y"
+#line 253 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(3) - (7)].code)) + strlen((yyvsp[(6) - (7)].code)) + 20);
                 sprintf((yyval.code), "if (%s) {\n%s\n}", (yyvsp[(3) - (7)].code), (yyvsp[(6) - (7)].code));
@@ -1845,7 +1865,7 @@ yyreduce:
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 239 "setlang.y"
+#line 259 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(3) - (7)].code)) + strlen((yyvsp[(5) - (7)].code)) + strlen((yyvsp[(7) - (7)].code)) + 30);
                 sprintf((yyval.code), "if (%s) {\n%s\n} else {\n%s\n}", (yyvsp[(3) - (7)].code), (yyvsp[(5) - (7)].code), (yyvsp[(7) - (7)].code));
@@ -1858,7 +1878,7 @@ yyreduce:
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 246 "setlang.y"
+#line 266 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(3) - (11)].code)) + strlen((yyvsp[(6) - (11)].code)) + strlen((yyvsp[(10) - (11)].code)) + 40);
                 sprintf((yyval.code), "if (%s) {\n%s\n} else {\n%s\n}", (yyvsp[(3) - (11)].code), (yyvsp[(6) - (11)].code), (yyvsp[(10) - (11)].code));
@@ -1871,7 +1891,7 @@ yyreduce:
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 255 "setlang.y"
+#line 275 "setlang.y"
     {
                     char* start_label = new_label();
                     char* end_label = new_label();
@@ -1888,7 +1908,7 @@ yyreduce:
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 268 "setlang.y"
+#line 288 "setlang.y"
     {
                     char* start_label = new_label();
                     char* end_label = new_label();
@@ -1913,7 +1933,7 @@ yyreduce:
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 289 "setlang.y"
+#line 309 "setlang.y"
     {
                 Symbol* sym = lookup_symbol((yyvsp[(3) - (4)].sval));
                 if (sym == NULL) {
@@ -1932,7 +1952,7 @@ yyreduce:
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 304 "setlang.y"
+#line 324 "setlang.y"
     {
                     (yyval.code) = malloc(strlen((yyvsp[(2) - (3)].code)) + 100);
                     strcpy((yyval.code), "");
@@ -1946,6 +1966,11 @@ yyreduce:
                             set_name[strlen(set_name) - 1] = '\0'; // remove trailing ')'
                             sprintf(temp, "printf(\"%%d\", set_size(%s));\n", set_name);
                             free(set_name);
+                        }  else if (strstr(token, "collection_size") != NULL) { // Collection size
+                            char *collection_name = strdup(token + 16); // skip "collection_size("
+                            collection_name[strlen(collection_name) - 1] = '\0'; // remove trailing ')'
+                            sprintf(temp, "printf(\"%%d\", collection_size(%s));\n", collection_name);
+                            free(collection_name);
                         } else {
                             Symbol *sym = lookup_symbol(token);
                             if (sym == NULL) {
@@ -1972,14 +1997,14 @@ yyreduce:
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 340 "setlang.y"
+#line 365 "setlang.y"
     { (yyval.code) = (yyvsp[(1) - (1)].code); ;}
     break;
 
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 341 "setlang.y"
+#line 366 "setlang.y"
     {
             (yyval.code) = malloc(strlen((yyvsp[(1) - (2)].code)) + strlen((yyvsp[(2) - (2)].code)) + 2);
             sprintf((yyval.code), "%s;%s", (yyvsp[(1) - (2)].code), (yyvsp[(2) - (2)].code));
@@ -1991,13 +2016,13 @@ yyreduce:
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 349 "setlang.y"
+#line 374 "setlang.y"
     {
                 if (is_string((yyvsp[(1) - (1)].code))) {
                     (yyval.code) = (yyvsp[(1) - (1)].code);
                 } else {
                     Symbol *sym = lookup_symbol((yyvsp[(1) - (1)].code));
-                    if (sym && sym->type == TYPE_SET) {
+                    if (sym && sym->type == TYPE_SET || sym->type == TYPE_COLLECTION) {
                         (yyval.code) = strdup((yyvsp[(1) - (1)].code));
                     } else {
                         (yyval.code) = (yyvsp[(1) - (1)].code);
@@ -2009,10 +2034,18 @@ yyreduce:
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 361 "setlang.y"
+#line 386 "setlang.y"
     {
-                (yyval.code) = malloc(strlen((yyvsp[(2) - (3)].code)) + 30);
-                sprintf((yyval.code), "set_size(%s)", (yyvsp[(2) - (3)].code));
+                Symbol *sym = lookup_symbol((yyvsp[(2) - (3)].code));
+                if(sym && sym->type == TYPE_SET) {
+                    (yyval.code) = malloc(strlen((yyvsp[(2) - (3)].code)) + 20);
+                    sprintf((yyval.code), "set_size(%s)", (yyvsp[(2) - (3)].code));
+                } else if(sym && sym->type == TYPE_COLLECTION) {
+                    (yyval.code) = malloc(strlen((yyvsp[(2) - (3)].code)) + 30);
+                    sprintf((yyval.code), "collection_size(%s)", (yyvsp[(2) - (3)].code));
+                } else {
+                    yyerror("SIZE can only be applied to sets/collections");
+                }
                 free((yyvsp[(2) - (3)].code));
             ;}
     break;
@@ -2020,7 +2053,7 @@ yyreduce:
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 378 "setlang.y"
+#line 411 "setlang.y"
     {
                 (yyval.code) = malloc(20);
                 sprintf((yyval.code), "%d", (yyvsp[(1) - (1)].ival));
@@ -2030,14 +2063,14 @@ yyreduce:
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 382 "setlang.y"
+#line 415 "setlang.y"
     { (yyval.code) = strdup((yyvsp[(1) - (1)].sval)); ;}
     break;
 
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 383 "setlang.y"
+#line 416 "setlang.y"
     {
                 if (lookup_symbol((yyvsp[(1) - (1)].sval)) == NULL) {
                     yyerror("Undefined variable");
@@ -2049,7 +2082,7 @@ yyreduce:
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 389 "setlang.y"
+#line 422 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (3)].code)) + strlen((yyvsp[(3) - (3)].code)) + 30);
                 SymbolType type1 = get_expression_type((yyvsp[(1) - (3)].code));
@@ -2069,7 +2102,7 @@ yyreduce:
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 403 "setlang.y"
+#line 436 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (3)].code)) + strlen((yyvsp[(3) - (3)].code)) + 30);
                 SymbolType type1 = get_expression_type((yyvsp[(1) - (3)].code));
@@ -2095,7 +2128,7 @@ yyreduce:
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 423 "setlang.y"
+#line 456 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (3)].code)) + strlen((yyvsp[(3) - (3)].code)) + 30);
                 SymbolType type1 = get_expression_type((yyvsp[(1) - (3)].code));
@@ -2107,11 +2140,15 @@ yyreduce:
                 } else if (type1 == TYPE_SET && type2 == TYPE_INT) {
                     sprintf((yyval.code), "set_remove(%s, %s)", (yyvsp[(1) - (3)].code), (yyvsp[(3) - (3)].code));
                 } else if (type1 == TYPE_COLLECTION && type2 == TYPE_STR) {
-                    sprintf((yyval.code), "collection_remove(%s, %s)", (yyvsp[(1) - (3)].code), (yyvsp[(3) - (3)].code));
+                    if(is_string((yyvsp[(3) - (3)].code))) {
+                        sprintf((yyval.code), "collection_remove(%s, %s)", (yyvsp[(1) - (3)].code), (yyvsp[(3) - (3)].code));
+                    } else {
+                        sprintf((yyval.code), "collection_remove(%s,%s)", (yyvsp[(1) - (3)].code), (yyvsp[(3) - (3)].code));
+                    }
                 } else if (type1 == TYPE_INT && type2 == TYPE_INT) {
                     sprintf((yyval.code), "%s - %s", (yyvsp[(1) - (3)].code), (yyvsp[(3) - (3)].code));
                 } else {
-                    yyerror("MINUS operation not supported for these types");
+                    yyerror("MINUS operation not supported for these types ");
                 }
                 free((yyvsp[(1) - (3)].code));
                 free((yyvsp[(3) - (3)].code));
@@ -2121,7 +2158,7 @@ yyreduce:
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 443 "setlang.y"
+#line 480 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (3)].code)) + strlen((yyvsp[(3) - (3)].code)) + 4);
                 sprintf((yyval.code), "%s * %s", (yyvsp[(1) - (3)].code), (yyvsp[(3) - (3)].code));
@@ -2133,7 +2170,7 @@ yyreduce:
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 449 "setlang.y"
+#line 486 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (3)].code)) + strlen((yyvsp[(3) - (3)].code)) + 4);
                 sprintf((yyval.code), "%s / %s", (yyvsp[(1) - (3)].code), (yyvsp[(3) - (3)].code));
@@ -2145,7 +2182,7 @@ yyreduce:
   case 45:
 
 /* Line 1455 of yacc.c  */
-#line 455 "setlang.y"
+#line 492 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(2) - (3)].code)) + 3);
                 sprintf((yyval.code), "(%s)", (yyvsp[(2) - (3)].code));
@@ -2156,21 +2193,21 @@ yyreduce:
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 460 "setlang.y"
+#line 497 "setlang.y"
     { (yyval.code) = (yyvsp[(1) - (1)].code); ;}
     break;
 
   case 47:
 
 /* Line 1455 of yacc.c  */
-#line 461 "setlang.y"
+#line 498 "setlang.y"
     { (yyval.code) = (yyvsp[(1) - (1)].code); ;}
     break;
 
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 464 "setlang.y"
+#line 501 "setlang.y"
     { 
                     (yyval.code) = strdup("set_new()"); 
                     printf("Debug: Created empty set\n");
@@ -2180,7 +2217,7 @@ yyreduce:
   case 49:
 
 /* Line 1455 of yacc.c  */
-#line 468 "setlang.y"
+#line 505 "setlang.y"
     {
                     printf("Debug: Set expression with elements\n");
                     char* temp = malloc(strlen((yyvsp[(2) - (3)].code)) + 50); // increased buffer size
@@ -2200,15 +2237,19 @@ yyreduce:
   case 50:
 
 /* Line 1455 of yacc.c  */
-#line 484 "setlang.y"
-    { (yyval.code) = strdup("collection_new()"); ;}
+#line 521 "setlang.y"
+    { 
+                        (yyval.code) = strdup("collection_new()"); 
+                        printf("Debug: Created empty collection\n");
+                    ;}
     break;
 
   case 51:
 
 /* Line 1455 of yacc.c  */
-#line 485 "setlang.y"
+#line 525 "setlang.y"
     {
+                        printf("Debug: Collection expression with elements\n");
                         char* temp = malloc(strlen((yyvsp[(2) - (3)].code)) + 50); // increased buffer size
                         int count = 1; // start with 1 for the first element
                         for (int i = 0; (yyvsp[(2) - (3)].code)[i] != '\0'; i++) {
@@ -2218,6 +2259,7 @@ yyreduce:
                         }
                         sprintf(temp, "collection_from_array(%d, %s)", count, (yyvsp[(2) - (3)].code));
                         (yyval.code) = temp;
+                        printf("Created collection: %s\n", (yyval.code));
                         free((yyvsp[(2) - (3)].code));
                     ;}
     break;
@@ -2225,7 +2267,7 @@ yyreduce:
   case 52:
 
 /* Line 1455 of yacc.c  */
-#line 499 "setlang.y"
+#line 541 "setlang.y"
     { 
                 printf("Debug: Element list with single expression\n");
                 (yyval.code) = (yyvsp[(1) - (1)].code); 
@@ -2235,7 +2277,7 @@ yyreduce:
   case 53:
 
 /* Line 1455 of yacc.c  */
-#line 503 "setlang.y"
+#line 545 "setlang.y"
     {
                 printf("Debug: Element list with multiple expressions\n");
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (3)].code)) + strlen((yyvsp[(3) - (3)].code)) + 3);
@@ -2248,7 +2290,7 @@ yyreduce:
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 512 "setlang.y"
+#line 554 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (3)].code)) + strlen((yyvsp[(3) - (3)].code)) + 4);
                 sprintf((yyval.code), "%s == %s", (yyvsp[(1) - (3)].code), (yyvsp[(3) - (3)].code));
@@ -2260,7 +2302,7 @@ yyreduce:
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 518 "setlang.y"
+#line 560 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (3)].code)) + strlen((yyvsp[(3) - (3)].code)) + 4);
                 sprintf((yyval.code), "%s < %s", (yyvsp[(1) - (3)].code), (yyvsp[(3) - (3)].code));
@@ -2272,7 +2314,7 @@ yyreduce:
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 524 "setlang.y"
+#line 566 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (3)].code)) + strlen((yyvsp[(3) - (3)].code)) + 4);
                 sprintf((yyval.code), "%s > %s", (yyvsp[(1) - (3)].code), (yyvsp[(3) - (3)].code));
@@ -2284,7 +2326,7 @@ yyreduce:
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 530 "setlang.y"
+#line 572 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (3)].code)) + strlen((yyvsp[(3) - (3)].code)) + 5);
                 sprintf((yyval.code), "%s <= %s", (yyvsp[(1) - (3)].code), (yyvsp[(3) - (3)].code));
@@ -2296,7 +2338,7 @@ yyreduce:
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 536 "setlang.y"
+#line 578 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (3)].code)) + strlen((yyvsp[(3) - (3)].code)) + 5);
                 sprintf((yyval.code), "%s >= %s", (yyvsp[(1) - (3)].code), (yyvsp[(3) - (3)].code));
@@ -2308,7 +2350,7 @@ yyreduce:
   case 59:
 
 /* Line 1455 of yacc.c  */
-#line 542 "setlang.y"
+#line 584 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(2) - (2)].code)) + 3);
                 sprintf((yyval.code), "!%s", (yyvsp[(2) - (2)].code));
@@ -2319,7 +2361,7 @@ yyreduce:
   case 60:
 
 /* Line 1455 of yacc.c  */
-#line 547 "setlang.y"
+#line 589 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (1)].code)) + 10);
                 sprintf((yyval.code), "!set_is_empty(%s)", (yyvsp[(1) - (1)].code));
@@ -2330,7 +2372,7 @@ yyreduce:
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 552 "setlang.y"
+#line 594 "setlang.y"
     {
                 (yyval.code) = malloc(strlen((yyvsp[(1) - (1)].code)) + 20);
                 sprintf((yyval.code), "!collection_is_empty(%s)", (yyvsp[(1) - (1)].code));
@@ -2341,12 +2383,15 @@ yyreduce:
   case 62:
 
 /* Line 1455 of yacc.c  */
-#line 557 "setlang.y"
+#line 599 "setlang.y"
     {
                 Symbol* sym = lookup_symbol((yyvsp[(1) - (1)].code));
                 if (sym && sym->type == TYPE_SET) {
                     (yyval.code) = malloc(strlen((yyvsp[(1) - (1)].code)) + 20);
                     sprintf((yyval.code), "!set_is_empty(%s)", (yyvsp[(1) - (1)].code));
+                } else if (sym && sym->type == TYPE_COLLECTION) {
+                    (yyval.code) = malloc(strlen((yyvsp[(1) - (1)].code)) + 30);
+                    sprintf((yyval.code), "!collection_is_empty(%s)", (yyvsp[(1) - (1)].code));
                 } else {
                     (yyval.code) = strdup((yyvsp[(1) - (1)].code));
                 }
@@ -2357,7 +2402,7 @@ yyreduce:
   case 63:
 
 /* Line 1455 of yacc.c  */
-#line 569 "setlang.y"
+#line 614 "setlang.y"
     {
                     Symbol* sym = lookup_symbol((yyvsp[(1) - (1)].sval));
                     if (sym == NULL) {
@@ -2372,7 +2417,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 2376 "setlang.tab.c"
+#line 2421 "setlang.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2584,7 +2629,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 580 "setlang.y"
+#line 625 "setlang.y"
 
 
 void yyerror(const char *s) {
@@ -2626,8 +2671,12 @@ int main(int argc, char **argv) {
     printf("Parsing finished with result: %d.\n", result);
     fprintf(yyout, "// Cleanup\n");
     for (int i = 0; i < table_size; i++) {
-        if (symbol_table[i] && symbol_table[i]->type == TYPE_SET) {
-            fprintf(yyout, "set_free(%s);\n", symbol_table[i]->name);
+        if(symbol_table[i]) {
+            if (symbol_table[i]->type == TYPE_SET) {
+                fprintf(yyout, "set_free(%s);\n", symbol_table[i]->name);
+            } else if (symbol_table[i]->type == TYPE_COLLECTION) {
+                fprintf(yyout, "collection_free(%s);\n", symbol_table[i]->name);
+            }
         }
     }
     //Close main function

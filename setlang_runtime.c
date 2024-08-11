@@ -230,3 +230,18 @@ void collection_remove(collection_t* collection, char* value) {
         }
     }
 }
+
+void collection_print(collection_t* collection) {
+    printf("{");
+    for (int i = 0; i < collection->size; i++) {
+        printf("%s", collection->elements[i]);
+        if (i < collection->size - 1) {
+            printf(", ");
+        }
+    }
+    printf("}\n");
+}
+
+bool collection_is_empty(collection_t* collection) {
+    return collection->size == 0;
+}
