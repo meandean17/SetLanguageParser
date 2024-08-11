@@ -20,8 +20,8 @@ output "s1 after adding 8: " s1;
 s2 = s2 - a;
 output "s2 after removing 3: " s2;
 
-s3 = s1 & s2;
-output "s3 (s1 intersection s2): " s3;
+
+output "s3 (s1 intersection s2): " s1 & s2;
 
 s4 = s1 + s2;
 output "s4 (s1 union s2): " s4;

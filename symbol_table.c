@@ -95,9 +95,10 @@ Symbol* lookup_symbol(const char* name) {
     unsigned int original_index = index;
 
     while (symbol_table[index] != NULL) {
-        if (strcmp(symbol_table[index]->name, name) == 0)
+        if (strcmp(symbol_table[index]->name, name) == 0) {
+            printf("Symbol found.\n");  // Debug print
             return symbol_table[index]; // Symbol found
- 
+        }
         index = (index + 1) % table_size;
         if (index == original_index) 
             return NULL; // searched entire table

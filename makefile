@@ -3,7 +3,7 @@ CFLAGS = -Wall -g
 FLEX = flex
 BISON = bison
 
-all: setlang_compiler
+all: setlang_compiler setlang_runtime.o
 
 setlang_compiler: lex.yy.c setlang.tab.c symbol_table.c
 	$(cc) $(CFLAGS) -o $@ $^

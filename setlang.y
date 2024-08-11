@@ -31,9 +31,9 @@
 
     //function to get expression type
     SymbolType get_expression_type(const char* expr) {
-        if (strncmp(expr, "set_", 4) == 0) {
+        if (strncmp(expr, "set_", 4) == 0 || strncmp(expr, "(set_", 5) == 0) {
             return TYPE_SET;
-        } else if (strncmp(expr, "collection_", 11) == 0) {
+        } else if (strncmp(expr, "collection_", 11) == 0 || strncmp(expr, "(collection_", 12) == 0) {
             return TYPE_COLLECTION;
         } else if (expr[0] >= '0' && expr[0] <= '9') {
             return TYPE_INT;
@@ -212,8 +212,8 @@ assignment: IDENTIFIER ASSIGN expression SEMICOLON {
                     yyerror("Undefined variable");
                 } else {
                     SymbolType type = get_expression_type($3);
-                    if(strncmp($3, "set_add", 7) == 0 || strncmp($3, "set_remove", 10) == 0) {
-                        // for set_add and set_remove, dont assign result
+                    if(strncmp($3, "set_add", 7) == 0 || strncmp($3, "set_remove", 10) == 0 || strncmp($3, "collection_add", 14) == 0 || strncmp($3, "collection_remove", 17) == 0) {
+                        // for set_add and set_remove collection_add collection_remove, dont assign result
                         $$ = malloc(strlen($3) + 2);
                         sprintf($$, "%s;", $3);
                     } else if (sym->type == TYPE_SET && type == TYPE_SET) {
@@ -340,17 +340,23 @@ output_statement: OUTPUT output_list SEMICOLON {
                             sprintf(temp, "printf(\"%%d\", collection_size(%s));\n", collection_name);
                             free(collection_name);
                         } else {
-                            Symbol *sym = lookup_symbol(token);
-                            if (sym == NULL) {
-                                yyerror("Undefined variable");
-                            } else if (sym->type == TYPE_INT) {
-                                sprintf(temp, "printf(\"%%d\", %s);\n", token);
-                            } else if (sym->type == TYPE_SET) {
+                            if (get_expression_type(token) == TYPE_SET) {
                                 sprintf(temp, "set_print(%s);\n", token);
-                            } else if (sym->type == TYPE_COLLECTION) {
+                            } else if (get_expression_type(token) == TYPE_COLLECTION) {
                                 sprintf(temp, "collection_print(%s);\n", token);
                             } else {
-                                yyerror("Unsupported type for output");
+                                Symbol *sym = lookup_symbol(token);
+                                if (sym == NULL) {
+                                    yyerror("Undefined variable");
+                                } else if (sym->type == TYPE_INT) {
+                                    sprintf(temp, "printf(\"%%d\", %s);\n", token);
+                                } else if (sym->type == TYPE_SET) {
+                                    sprintf(temp, "set_print(%s);\n", token);
+                                } else if (sym->type == TYPE_COLLECTION) {
+                                    sprintf(temp, "collection_print(%s);\n", token);
+                                } else {
+                                    yyerror("Unsupported type for output");
+                                }
                             }
                         }
                         strcat($$, temp);
@@ -375,11 +381,16 @@ output_item: expression {
                 if (is_string($1)) {
                     $$ = $1;
                 } else {
-                    Symbol *sym = lookup_symbol($1);
-                    if (sym && sym->type == TYPE_SET || sym->type == TYPE_COLLECTION) {
-                        $$ = strdup($1);
-                    } else {
+                    if(get_expression_type($1) == TYPE_SET || get_expression_type($1) == TYPE_COLLECTION) {
                         $$ = $1;
+                    } else {
+                        printf("Debug: Output item: %s\n", $1);
+                        Symbol *sym = lookup_symbol($1);
+                        if ((sym && sym->type == TYPE_SET) || (sym->type == TYPE_COLLECTION)) {
+                            $$ = strdup($1);
+                        } else {
+                            $$ = $1;
+                        }
                     }
                 }
             }
@@ -612,6 +623,7 @@ condition: expression EQUAL expression {
             ;
 
 set_or_collection: IDENTIFIER {
+                    printf("Debug: Set or collection: %s\n", $1);
                     Symbol* sym = lookup_symbol($1);
                     if (sym == NULL) {
                         yyerror("Undefined variable");
@@ -661,7 +673,7 @@ int main(int argc, char **argv) {
     printf("Starting to parse...\n");
     int result = yyparse();
     printf("Parsing finished with result: %d.\n", result);
-    fprintf(yyout, "// Cleanup\n");
+    fprintf(yyout, "\n// Cleanup\n");
     for (int i = 0; i < table_size; i++) {
         if(symbol_table[i]) {
             if (symbol_table[i]->type == TYPE_SET) {
