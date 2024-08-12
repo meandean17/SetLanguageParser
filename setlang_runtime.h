@@ -6,6 +6,11 @@
 
 typedef struct set_t set_t;
 typedef struct collection_t collection_t;
+typedef struct {
+    void* container;
+    int current;
+    bool is_set;
+} iterator_t;
 
 set_t* set_new();
 void set_free(set_t* set);
@@ -32,5 +37,10 @@ collection_t* collection_difference(collection_t* collection1, collection_t* col
 void collection_remove(collection_t* collection, char* value);
 void collection_print(collection_t* collection);
 bool collection_is_empty(collection_t* collection);
+
+iterator_t iterator_new(void* container, bool is_set);
+bool iterator_has_next(iterator_t* it);
+void* iterator_next(iterator_t* it);
+void iterator_free(iterator_t* it);
 
 #endif

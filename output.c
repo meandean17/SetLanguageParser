@@ -1,78 +1,122 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include "setlang_runtime.h"
 int main()
 {
-    collection_t *highTech = collection_new();
-    collection_t *gaming = collection_new();
+    collection_t *class = collection_new();
+    collection_t *highGradeStudents = collection_new();
+    collection_t *lowGradeStudents = collection_new();
+    collection_t *avgGradeStudents = collection_new();
 
-    collection_t *software = collection_new();
-    collection_t *hardware = collection_new();
-    collection_t *industrial = collection_new();
+    set_t *grades = set_new();
+    set_t *gradesHigh = set_new();
 
-    collection_free(highTech);
-    highTech = collection_from_array(7, "Apple", "Google", "Microsoft", "Nvidia", "Adobe", "Oracle", "Sap");
-    highTech = collection_union(highTech, collection_from_array(6, "PayPal", "Nice", "Amdocs", "OpenAI", "Ford", "Mercedes"));
-    collection_free(gaming);
-    gaming = collection_from_array(6, "Sony", "Apple", "Microsoft", "Google", "Nintendo", "Playtika");
-    collection_free(software);
-    software = collection_from_array(9, "Apple", "Microsoft", "Oracle", "Google", "Sap", "PayPal", "Playtika", "Amdocs", "OpenAI");
-    collection_free(hardware);
-    hardware = collection_from_array(8, "Apple", "Nice", "Sony", "Google", "Cummins", "Nucor", "Microsoft", "Nvidia");
-    collection_free(industrial);
-    industrial = collection_from_array(3, "Caterpillar", "Cummins", "Nucor");
-    printf("Companies that sell hardware & software:");
-    collection_print(collection_intersection(software, hardware));
-    printf("\n");
-
-    collection_t *highSW = collection_new();
-
-    collection_free(highSW);
-    highSW = collection_intersection(software, highTech);
-    if (highSW == software)
+    int grd;
+    char *student = NULL;
+    collection_free(class);
+    class = collection_from_array(10, "Rafi_Suisa", "Tamar_Even", "Avi_Maoz", "Eli_Kamer", "Shlomit_Raz", "Haim_Mizrachi", "Moshe_Samocha", "Tali_Raban", "Sharon_Tal", "Gal_Elbaz");
+    set_free(gradesHigh);
+    gradesHigh = set_new();
+    collection_free(highGradeStudents);
+    highGradeStudents = collection_new();
     {
-        printf("All software companies are high-tech companies:");
-        collection_print(highSW);
+        iterator_t it = iterator_new(class, false);
+        while (iterator_has_next(&it))
+        {
+            student = (char *)iterator_next(&it);
+
+            printf("Grade for:");
+            printf("%s", student);
+            printf("\n");
+
+            printf(">");
+            if (scanf("%d", &grd) != 1)
+            {
+                fprintf(stderr, "Invalid input\n");
+                exit(1);
+            }
+            while (getchar() != '\n')
+                ; // Clear input buffer
+
+            set_add(grades, grd);
+            if (grd >= 90)
+            {
+
+                set_add(gradesHigh, grd);
+                collection_add(highGradeStudents, student);
+            }
+        }
+        iterator_free(&it);
+    }
+
+    if (!set_is_empty(gradesHigh))
+    {
+
+        printf("Number of top grades:");
+        printf("%d", set_size(gradesHigh));
+        printf("\n");
+
+        printf("Top Grades are:");
+        set_print(gradesHigh);
+        printf("\n");
+
+        printf("High Grade Students are:");
+        collection_print(highGradeStudents);
         printf("\n");
     }
-    else
+    printf("Low-grade students >");
     {
-        printf("Not all software companies are high-tech companies:");
-        collection_print(highSW);
-        printf("\n");
+        char temp[1000];
+        if (fgets(temp, sizeof(temp), stdin) == NULL)
+        {
+            fprintf(stderr, "Invalid input\n");
+            exit(1);
+        }
+        temp[strcspn(temp, "\n")] = '\0'; // Remove newline
+        char *token = strtok(temp, ",");
+        while (token != NULL)
+        {
+            char *value = strdup(token);
+            char *end = value + strlen(value) - 1;
+            while (end > value && isspace(*end))
+                end--;
+            *(end + 1) = '\0'; // Remove trailing spaces
+            char *start = value;
+            while (*start && isspace(*start))
+                start++;
+            memmove(value, start, strlen(start) + 1); // Remove leading spaces
+            collection_add(lowGradeStudents, value);
+            free(value);
+            token = strtok(NULL, ",");
+        }
     }
-    collection_add(highSW, "Playtika");
-    if (highSW == software)
-    {
-        printf("Now all software companies are high-tech companies:");
-        collection_print(highSW);
-        printf("\n");
-    }
-    else
-    {
-        printf("Not all software companies are high-tech companies:");
-        collection_print(highSW);
-        printf("\n");
-    }
-    printf("Companies that do software or hardware:");
-    collection_print(collection_union(software, hardware));
-    printf("\n");
 
-    if (collection_intersection(industrial, software) == collection_new())
     {
-        printf("No industrial companies sell software");
-        printf("\n");
+        iterator_t it = iterator_new(lowGradeStudents, false);
+        while (iterator_has_next(&it))
+        {
+            student = (char *)iterator_next(&it);
+            printf("Get better next time:");
+            printf("%s", student);
+            printf("\n");
+        }
+        iterator_free(&it);
     }
-    printf("Companies that sell Hardware but not Gaming Software:");
-    collection_print(collection_difference(hardware, (collection_intersection(software, gaming))));
+
+    collection_free(avgGradeStudents);
+    avgGradeStudents = collection_difference(collection_difference(class, highGradeStudents), lowGradeStudents);
+    printf("Students with good grades:");
+    collection_print(avgGradeStudents);
     printf("\n");
 
     // Cleanup
-    collection_free(software);
-    collection_free(highTech);
-    collection_free(gaming);
-    collection_free(hardware);
-    collection_free(industrial);
-    collection_free(highSW);
+    set_free(grades);
+    collection_free(avgGradeStudents);
+    collection_free(highGradeStudents);
+    collection_free(class);
+    set_free(gradesHigh);
+    collection_free(lowGradeStudents);
     return 0;
 }

@@ -15,14 +15,14 @@
 %%
 
 "int"   { printf("Lexer: found keyword INT\n"); return INT; }
-"str"   { return STR; }
+"str"   {  return STR; }
 "set"   { return SET; }
 "collection"    { return COLLECTION; }
 "if"    { printf("Lexer: found keyword IF\n"); return IF; }
 "else"  { return ELSE; }
 "while" { return WHILE; }
 "for"   { return FOR; }
-"input" { return INPUT; }
+"input" { printf("Lexer: found keyword INPUT\n"); return INPUT; }
 "output"    { printf("Lexer: found keyword OUTPUT\n"); return OUTPUT; }
 
 "+"     { return PLUS; }
@@ -30,6 +30,7 @@
 "*"     { return MULTIPLY; }
 "/"     { return DIVIDE; }
 "&"     { return AND; }
+"%"     { return MOD; }
 "="     { printf("Lexer: found keyword ASSIGN\n"); return ASSIGN; }
 "=="    { return EQUAL; }
 "<"     { return LESS; }
@@ -50,6 +51,7 @@
 ";"   { return SEMICOLON; }
 
 [0-9]+  { printf("Lexer: found keyword INTEGER %d\n", atoi(yytext)); yylval.ival = atoi(yytext); return INTEGER; }
+-?[0-9]+ { printf("Lexer: found keyword INTEGER %d\n", atoi(yytext)); yylval.ival = atoi(yytext); return INTEGER; }
 \"[^\"]*\"  { printf("Lexer: found keyword STRING %s\n", yytext); yylval.sval = strdup(yytext); return STRING; }
 
 [a-zA-Z_][a-zA-Z0-9_]* { printf("Lexer: found keyword IDENTIFIER %s\n", yytext); yylval.sval = strdup(yytext); return IDENTIFIER; }

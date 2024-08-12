@@ -4,7 +4,7 @@
 #include <string.h>
 
 
-#define INITIAL_SIZE 100
+#define INITIAL_SIZE 200
 
 Symbol** symbol_table;
 int table_size;

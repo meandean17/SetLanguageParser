@@ -18,6 +18,6 @@ setlang_runtime.o: setlang_runtime.c setlang_runtime.h
 	$(cc) $(CFLAGS) -c setlang_runtime.c
 
 clean:
-	del setlang_compiler.exe *.o *.yy.c setlang.tab.c setlang.tab.h
+	del setlang_compiler.exe *.o *.yy.c setlang.tab.c setlang.tab.h output.c
 
 .PHONY: all clean

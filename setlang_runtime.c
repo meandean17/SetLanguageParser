@@ -16,6 +16,7 @@ struct collection_t {
     int capacity;
 };
 
+
 set_t* set_new() {
     set_t* set = malloc(sizeof(set_t));
     set->size = 0;
@@ -113,14 +114,14 @@ void set_remove(set_t* set, int value) {
 }
 
 void set_print(set_t* set) {
-    printf("{");
+    printf("[");
     for (int i = 0; i < set->size; i++) {
         printf("%d", set->elements[i]);
         if (i < set->size - 1) {
             printf(", ");
         }
     }
-    printf("}\n");
+    printf("]\n");
 }
 
 bool set_is_empty(set_t* set) {
@@ -240,8 +241,40 @@ void collection_print(collection_t* collection) {
         }
     }
     printf("}\n");
-}
+} 
 
 bool collection_is_empty(collection_t* collection) {
     return collection->size == 0;
+}
+
+iterator_t iterator_new(void* container, bool is_set) {
+    iterator_t it;
+    it.container = container;
+    it.current = 0;
+    it.is_set = is_set;
+    return it;
+}
+
+bool iterator_has_next(iterator_t* it) {
+    if (it->is_set) {
+        return it->current < ((set_t*)it->container)->size;
+    } else {
+        return it->current < ((collection_t*)it->container)->size;
+    }
+}
+
+void* iterator_next(iterator_t* it) {
+    if (iterator_has_next(it)) {
+        if (it->is_set) {
+            return &(((set_t*)it->container)->elements[it->current++]);
+        } else {
+            return ((collection_t*)it->container)->elements[it->current++];
+        }
+    }
+    return NULL;
+}
+
+void iterator_free(iterator_t* it) {
+    // Nothing to free in this simple implementation
+    (void)it;
 }

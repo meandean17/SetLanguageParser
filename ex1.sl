@@ -8,6 +8,7 @@ hardware = {"Apple", "Nice", "Sony", "Google", "Cummins", "Nucor", "Microsoft", 
 industrial = {"Caterpillar", "Cummins", "Nucor"};
 output "Companies that sell hardware & software:" software & hardware;
 collection highSW;
+output "size of hardware" |hardware|;
 highSW = software & highTech;
 if (highSW == software)
 output "All software companies are high-tech companies:" highSW;
@@ -19,6 +20,6 @@ output "Now all software companies are high-tech companies:" highSW;
 else
 output "Not all software companies are high-tech companies:" highSW;
 output "Companies that do software or hardware:" software + hardware;
-if (industrial & software == {})
+if (industrial & software & highSW == {})
 output "No industrial companies sell software";
 output "Companies that sell Hardware but not Gaming Software:" hardware - (software & gaming);

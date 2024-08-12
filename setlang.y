@@ -31,9 +31,9 @@
 
     //function to get expression type
     SymbolType get_expression_type(const char* expr) {
-        if (strncmp(expr, "set_", 4) == 0 || strncmp(expr, "(set_", 5) == 0) {
+        if (strncmp(expr, "set_", 4) == 0 || strncmp(expr, "(set_", 5 == 0)) {
             return TYPE_SET;
-        } else if (strncmp(expr, "collection_", 11) == 0 || strncmp(expr, "(collection_", 12) == 0) {
+        } else if (strncmp(expr, "collection_", 11) == 0 || strncmp(expr, "(collection_", 12 == 0)) {
             return TYPE_COLLECTION;
         } else if (expr[0] >= '0' && expr[0] <= '9') {
             return TYPE_INT;
@@ -63,7 +63,7 @@
 %token INPUT OUTPUT
 %token LBRACKET RBRACKET LBRACE RBRACE LPAREN RPAREN
 %token COMMA SIZE SEMICOLON COLON
-%token PLUS MINUS MULTIPLY DIVIDE AND ASSIGN EQUAL LESS GREATER LESS_EQUAL GREATER_EQUAL NOT
+%token PLUS MINUS MULTIPLY DIVIDE MOD AND ASSIGN EQUAL LESS GREATER LESS_EQUAL GREATER_EQUAL NOT
 
 %type <code> expression statement statement_list declaration assignment if_statement while_statement for_statement input_statement output_statement
 %type <code> set_expression collection_expression element_list condition
@@ -75,7 +75,8 @@
 %left AND
 %left EQUAL LESS GREATER LESS_EQUAL GREATER_EQUAL
 %left PLUS MINUS
-%left MULTIPLY DIVIDE
+%left MULTIPLY DIVIDE MOD
+%right UMINUS
 %right NOT
 %left SIZE
 
@@ -189,12 +190,14 @@ declaration: INT { current_type = TYPE_INT; } identifier_list SEMICOLON {
             ;
 
 identifier_list: IDENTIFIER {
+                    printf("Debug: Identifier list with single identifier: %s\n", $1);  // Debug print
                     if (!insert_symbol($1, current_type)) {
                         yyerror("Symbol already defined");
                     }
                     $$ = strdup($1);
                 }
                 | identifier_list COMMA IDENTIFIER {
+                    printf("Debug: Identifier list with multiple identifiers: %s\n", $3);  // Debug print
                     if (!insert_symbol($3, current_type)) {
                         yyerror("Symbol already defined");
                     }
@@ -273,36 +276,51 @@ if_statement: IF LPAREN condition RPAREN statement {
             ;
 
 while_statement: WHILE LPAREN condition RPAREN statement {
-                    char* start_label = new_label();
-                    char* end_label = new_label();
-                    $$ = malloc(strlen($3) + strlen($5) + strlen(start_label) + strlen(end_label) + 100);
-                    sprintf($$, "%s:\nif (!%s) goto %s;\n%s\ngoto %s;\n%s:", 
-                            start_label, $3, end_label, $5, start_label, end_label);
+                    $$ = malloc(strlen($3) + strlen($5) + 50);
+                    sprintf($$, "while (%s) {\n%s\n}", $3, $5);
                     free($3);
                     free($5);
-                    free(start_label);
-                    free(end_label);
+                }
+                |
+                WHILE LPAREN condition RPAREN LBRACE statement_list RBRACE {
+                    $$ = malloc(strlen($3) + strlen($6) + 50);
+                    sprintf($$, "while (%s) {\n%s\n}", $3, $6);
+                    free($3);
+                    free($6);
                 }
                 ;
 
 for_statement: FOR LPAREN IDENTIFIER COLON set_or_collection RPAREN statement {
-                    char* start_label = new_label();
-                    char* end_label = new_label();
-                    $$ = malloc(strlen($3) + strlen($5) + strlen($7) + strlen(start_label) + strlen(end_label) + 200);
-                    sprintf($$, "{\n iterator_t it = iterator_new(%s);\n"
-                                " %s:\n"
-                                " if (!iterator_has_next(&it)) goto %s;\n"
-                                " %s = iterator_next(&it);\n"
-                                " %s\n"
-                                " goto %s;\n"
-                                " %s:\n"
-                                " iterator_free(&it);\n"
-                                "}\n",
-                            $5, start_label, end_label, $3, $7, start_label, end_label);
+                    Symbol *sym = lookup_symbol($5);
+                    char* type = sym->type == TYPE_SET ? "int" : "char*";
+                    $$ = malloc(strlen($3) + strlen($5) + strlen($7) + 200);
+                    sprintf($$, "{\n"
+                                "iterator_t it = iterator_new(%s, %s);\n"
+                                "while (iterator_has_next(&it)) {\n"
+                                "%s = (%s)iterator_next(&it);\n"
+                                "%s\n"
+                                "}\n"
+                                "iterator_free(&it);\n"
+                                "}\n", $5, (sym->type == TYPE_SET ? "true" : "false"), $3, type, $7);
+                    free($3);
                     free($5);
                     free($7);
-                    free(start_label);
-                    free(end_label);
+                }
+                | FOR LPAREN IDENTIFIER COLON set_or_collection RPAREN LBRACE statement_list RBRACE {
+                    Symbol *sym = lookup_symbol($5);
+                    char* type = sym->type == TYPE_SET ? "int" : "char*";
+                    $$ = malloc(strlen($3) + strlen($5) + strlen($8) + 200);
+                    sprintf($$, "{\n"
+                                "iterator_t it = iterator_new(%s, %s);\n"
+                                "while (iterator_has_next(&it)) {\n"
+                                "%s = (%s)iterator_next(&it);\n"
+                                "%s\n"
+                                "}\n"
+                                "iterator_free(&it);\n"
+                                "}\n", $5, (sym->type == TYPE_SET ? "true" : "false"), $3, type, $8);
+                    free($3);
+                    free($5);
+                    free($8);
                 }
                 ;
 
@@ -311,13 +329,72 @@ input_statement: INPUT expression IDENTIFIER SEMICOLON {
                 if (sym == NULL) {
                     yyerror("Undefined variable");
                 }
-                $$ = malloc(strlen($2) + strlen($3) + 100);
-                sprintf($$, "printf(%s);\n"
-                            "if (scanf(\"%%d\", &%s) != 1) {\n"
-                            "   fprintf(stderr, \"Invalid input\\n\");\n"
-                            "   exit(1);\n"
-                            "}\n", $2, $3);
+                $$ = malloc(strlen($2) + strlen($3) + 1000);
+                switch(sym->type) {
+                    case TYPE_INT:
+                        sprintf($$, "printf(%s);\n"
+                                    "if (scanf(\"%%d\", &%s) != 1) {\n"
+                                    "   fprintf(stderr, \"Invalid input\\n\");\n"
+                                    "   exit(1);\n"
+                                    "}\n"
+                                    "while (getchar() != '\\n'); // Clear input buffer\n", $2, $3);
+
+                        break;
+                    case TYPE_STR:
+                        sprintf($$, "printf(%s);\n"
+                                    "%s = malloc(1000);\n"
+                                    "if (scanf(\"%%999s\", %s) != 1) {\n"
+                                    "   fprintf(stderr, \"Invalid input\\n\");\n"
+                                    "   exit(1);\n"
+                                    "}\n", $2, $3, $3);
+                        break;
+                    case TYPE_SET:
+                        sprintf($$, "printf(%s);\n"
+                                    "char* temp[1000];\n"
+                                    "if (fgets(temp, 1000, stdin) == NULL) {\n"
+                                    "   fprintf(stderr, \"Invalid input\\n\");\n"
+                                    "   exit(1);\n"
+                                    "}\n"
+                                    "char* token = strtok(temp, \",\");\n"
+                                    "while (token != NULL) {\n"
+                                    "   int value;\n"
+                                    "   if (sscanf(token, \"%%d\", &value) != 1) {\n"
+                                    "       set_add(%s, value);\n"
+                                    "   }\n"
+                                    "   token = strtok(NULL, \",\");\n"
+                                    "}\n", $2, $3);
+                        break;
+                    case TYPE_COLLECTION:
+                        printf("Debug: Generating input statement for collection %s\n", $3);
+                        sprintf($$, "printf(%s);\n"
+                                    "{\n"
+                                    "    char temp[1000];\n"
+                                    "    if (fgets(temp, sizeof(temp), stdin) == NULL) {\n"
+                                    "        fprintf(stderr, \"Invalid input\\n\");\n"
+                                    "        exit(1);\n"
+                                    "    }\n"
+                                    "    temp[strcspn(temp, \"\\n\")] = '\\0';  // Remove newline\n"
+                                    "    char* token = strtok(temp, \",\");\n"
+                                    "    while (token != NULL) {\n"
+                                    "        char* value = strdup(token);\n"
+                                    "        char* end = value + strlen(value) - 1;\n"
+                                    "        while (end > value && isspace(*end)) end--;\n"
+                                    "        *(end+1) = '\\0';  // Remove trailing spaces\n"
+                                    "        char* start = value;\n"
+                                    "        while (*start && isspace(*start)) start++;\n"
+                                    "        memmove(value, start, strlen(start) + 1);  // Remove leading spaces\n"
+                                    "        collection_add(%s, value);\n"
+                                    "        free(value);\n"
+                                    "        token = strtok(NULL, \",\");\n"
+                                    "    }\n"
+                                    "}\n", $2, $3);
+                        printf("Debug: Generated input statement for collection %s\n", $3);
+                        break;
+                    default:
+                        yyerror("Unsupported type for input");
+                }
                 free($2);
+                free($3);
                 }
                 ;
 
@@ -328,7 +405,20 @@ output_statement: OUTPUT output_list SEMICOLON {
                     while (token != NULL) {
                         char *temp = malloc(strlen(token) + 100);
                         if (token[0] == '"') { // String literal
-                            sprintf(temp, "printf(%s);\n", token);
+                            // sprintf(temp, "printf(%s);\n", token);
+                            char *escaped = malloc(strlen(token) * 2 + 1);
+                            char *p = escaped;
+                            for (char *c = token; *c; c++) {
+                                if (*c == '%') {
+                                    *p++ = '%';
+                                    *p++ = '%';
+                                } else {
+                                    *p++ = *c;
+                                }
+                            }
+                            *p = '\0';
+                            sprintf(temp, "printf(%s);\n", escaped);
+                            free(escaped);
                         } else if (strstr(token, "set_size") != NULL) { // Set size
                             char *set_name = strdup(token + 9); // skip "set_size("
                             set_name[strlen(set_name) - 1] = '\0'; // remove trailing ')'
@@ -354,6 +444,8 @@ output_statement: OUTPUT output_list SEMICOLON {
                                     sprintf(temp, "set_print(%s);\n", token);
                                 } else if (sym->type == TYPE_COLLECTION) {
                                     sprintf(temp, "collection_print(%s);\n", token);
+                                } else if (sym->type == TYPE_STR) {
+                                    sprintf(temp, "printf(\"%%s\", %s);\n", token);
                                 } else {
                                     yyerror("Unsupported type for output");
                                 }
@@ -422,6 +514,11 @@ expression_list: expression { $$ = $1; }
 expression: INTEGER {
                 $$ = malloc(20);
                 sprintf($$, "%d", $1);
+            }
+            | MINUS expression %prec UMINUS {
+                $$ = malloc(strlen($2) + 4);
+                sprintf($$, "-%s", $2);
+                free($2);
             }
             | STRING { $$ = strdup($1); }
             | IDENTIFIER {
@@ -497,6 +594,18 @@ expression: INTEGER {
             | expression DIVIDE expression {
                 $$ = malloc(strlen($1) + strlen($3) + 4);
                 sprintf($$, "%s / %s", $1, $3);
+                free($1);
+                free($3);
+            }
+            | expression MOD expression {
+                SymbolType type1 = get_expression_type($1);
+                SymbolType type2 = get_expression_type($3);
+                if (type1 != TYPE_INT || type2 != TYPE_INT) {
+                    yyerror("MOD operation can only be applied to integers");
+                } else {
+                    $$ = malloc(strlen($1) + strlen($3) + 4);
+                    sprintf($$, "%s %% %s", $1, $3);
+                }
                 free($1);
                 free($3);
             }
@@ -592,6 +701,12 @@ condition: expression EQUAL expression {
                 free($1);
                 free($3);
             }
+            | expression NOT ASSIGN expression {
+                $$ = malloc(strlen($1) + strlen($4) + 6);
+                sprintf($$, "%s != %s", $1, $4);
+                free($1);
+                free($4);
+            }
             | NOT condition {
                 $$ = malloc(strlen($2) + 3);
                 sprintf($$, "!%s", $2);
@@ -666,6 +781,8 @@ int main(int argc, char **argv) {
     //Write necessary includes and function prototypes
     fprintf(yyout, "#include <stdio.h>\n");
     fprintf(yyout, "#include <stdlib.h>\n");
+    fprintf(yyout, "#include <string.h>\n");
+    fprintf(yyout, "#include <ctype.h>\n");
     fprintf(yyout, "#include \"setlang_runtime.h\"\n");
     fprintf(yyout, "int main() {\n");
 
