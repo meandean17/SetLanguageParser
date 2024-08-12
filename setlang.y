@@ -31,15 +31,17 @@
 
     //function to get expression type
     SymbolType get_expression_type(const char* expr) {
-        if (strncmp(expr, "set_", 4) == 0 || strncmp(expr, "(set_", 5 == 0)) {
+        if ((strncmp(expr, "set_", 4) == 0) || (strncmp(expr, "(set_", 5) == 0)) {
             return TYPE_SET;
-        } else if (strncmp(expr, "collection_", 11) == 0 || strncmp(expr, "(collection_", 12 == 0)) {
+        } else if ((strncmp(expr, "collection_", 11) == 0) || (strncmp(expr, "(collection_", 12) == 0)) {
+            printf("Debug: Found collection\n");
             return TYPE_COLLECTION;
         } else if (expr[0] >= '0' && expr[0] <= '9') {
             return TYPE_INT;
         } else if (is_string(expr)) {
             return TYPE_STR;
         } else {
+            printf("Debug: Looking up symbol %s\n", expr);
             Symbol* sym = lookup_symbol(expr);
             if (sym != NULL) {
                 return sym->type;
@@ -215,11 +217,7 @@ assignment: IDENTIFIER ASSIGN expression SEMICOLON {
                     yyerror("Undefined variable");
                 } else {
                     SymbolType type = get_expression_type($3);
-                    if(strncmp($3, "set_add", 7) == 0 || strncmp($3, "set_remove", 10) == 0 || strncmp($3, "collection_add", 14) == 0 || strncmp($3, "collection_remove", 17) == 0) {
-                        // for set_add and set_remove collection_add collection_remove, dont assign result
-                        $$ = malloc(strlen($3) + 2);
-                        sprintf($$, "%s;", $3);
-                    } else if (sym->type == TYPE_SET && type == TYPE_SET) {
+                    if (sym->type == TYPE_SET && type == TYPE_SET) {
                         //only free if the variable is not used in the expression
                         if (strstr($3, $1) == NULL) {
                             $$ = malloc(strlen($1) + strlen($3) + 50);
@@ -487,15 +485,24 @@ output_item: expression {
                 }
             }
             | SIZE expression SIZE {
-                Symbol *sym = lookup_symbol($2);
-                if(sym && sym->type == TYPE_SET) {
+                printf("Debug: SIZE expression in output_item\n");
+                if (get_expression_type($2) == TYPE_SET) {
                     $$ = malloc(strlen($2) + 20);
                     sprintf($$, "set_size(%s)", $2);
-                } else if(sym && sym->type == TYPE_COLLECTION) {
+                } else if (get_expression_type($2) == TYPE_COLLECTION) {
                     $$ = malloc(strlen($2) + 30);
                     sprintf($$, "collection_size(%s)", $2);
                 } else {
-                    yyerror("SIZE can only be applied to sets/collections");
+                    Symbol *sym = lookup_symbol($2);
+                    if(sym && sym->type == TYPE_SET) {
+                        $$ = malloc(strlen($2) + 20);
+                        sprintf($$, "set_size(%s)", $2);
+                    } else if(sym && sym->type == TYPE_COLLECTION) {
+                        $$ = malloc(strlen($2) + 30);
+                        sprintf($$, "collection_size(%s)", $2);
+                    } else {
+                        yyerror("SIZE can only be applied to sets/collections");
+                    }
                 }
                 free($2);
             }
@@ -562,9 +569,12 @@ expression: INTEGER {
                 free($3);
             }
             | expression MINUS expression {
+                printf("Debug: MINUS expression\n");
                 $$ = malloc(strlen($1) + strlen($3) + 30);
                 SymbolType type1 = get_expression_type($1);
+                printf("Type of %s: %d\n", $1, type1);
                 SymbolType type2 = get_expression_type($3);
+                printf("Type of %s: %d\n", $3, type2);
                 if (type1 == TYPE_SET && type2 == TYPE_SET) {
                     sprintf($$, "set_difference(%s, %s)", $1, $3);
                 } else if (type1 == TYPE_COLLECTION && type2 == TYPE_COLLECTION) {
@@ -612,6 +622,28 @@ expression: INTEGER {
             | LPAREN expression RPAREN {
                 $$ = malloc(strlen($2) + 3);
                 sprintf($$, "(%s)", $2);
+                free($2);
+            }
+            | SIZE expression SIZE {
+                printf("Debug: SIZE expression\n");
+                if (get_expression_type($2) == TYPE_SET) {
+                    $$ = malloc(strlen($2) + 20);
+                    sprintf($$, "set_size(%s)\n", $2);
+                } else if (get_expression_type($2) == TYPE_COLLECTION) {
+                    $$ = malloc(strlen($2) + 30);
+                    sprintf($$, "collection_size(%s);\n", $2);
+                } else {
+                    Symbol *sym = lookup_symbol($2);
+                    if(sym && sym->type == TYPE_SET) {
+                        $$ = malloc(strlen($2) + 20);
+                        sprintf($$, "set_size(%s)", $2);
+                    } else if(sym && sym->type == TYPE_COLLECTION) {
+                        $$ = malloc(strlen($2) + 30);
+                        sprintf($$, "collection_size(%s)", $2);
+                    } else {
+                        yyerror("SIZE can only be applied to sets/collections");
+                    }
+                }
                 free($2);
             }
             | set_expression { $$ = $1; }
@@ -672,8 +704,18 @@ element_list: expression {
             ;
 
 condition: expression EQUAL expression {
-                $$ = malloc(strlen($1) + strlen($3) + 4);
-                sprintf($$, "%s == %s", $1, $3);
+                SymbolType type1 = get_expression_type($1);
+                SymbolType type2 = get_expression_type($3);
+                if (type1 == TYPE_SET && type2 == TYPE_SET) {
+                    $$ = malloc(strlen($1) + strlen($3) + 20);
+                    sprintf($$, "set_equals(%s, %s)", $1, $3);
+                } else if (type1 == TYPE_COLLECTION && type2 == TYPE_COLLECTION) {
+                    $$ = malloc(strlen($1) + strlen($3) + 30);
+                    sprintf($$, "collection_equals(%s, %s)", $1, $3);
+                } else {
+                    $$ = malloc(strlen($1) + strlen($3) + 4);
+                    sprintf($$, "%s == %s", $1, $3);
+                }
                 free($1);
                 free($3);
             }

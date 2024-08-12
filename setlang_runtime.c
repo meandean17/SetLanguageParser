@@ -39,7 +39,7 @@ bool set_contains(set_t* set, int value) {
     return false;
 }
 
-void set_add(set_t* set, int value) {
+set_t* set_add(set_t* set, int value) {
     if (!set_contains(set, value)) {
         if(set->size == set->capacity) {
             set->capacity = set->capacity == 0 ? 1 : set->capacity * 2;
@@ -52,6 +52,7 @@ void set_add(set_t* set, int value) {
         set->elements[set->size] = value;
         set->size++;
     }
+    return set;
 }
 
 set_t* set_from_array(int count, ...) {
@@ -101,16 +102,17 @@ set_t* set_difference(set_t* set1, set_t* set2) {
     return result;
 }
 
-void set_remove(set_t* set, int value) {
+set_t* set_remove(set_t* set, int value) {
     for (int i = 0; i < set->size; i++) {
         if(set->elements[i] == value) {
             for (int j = i; j < set->size - 1; j++) {
                 set->elements[j] = set->elements[j + 1];
             }
             set->size--;
-            return;
+            return set;
         }
     }
+    return set;
 }
 
 void set_print(set_t* set) {
@@ -126,6 +128,19 @@ void set_print(set_t* set) {
 
 bool set_is_empty(set_t* set) {
     return set->size == 0;
+}
+
+// Set comparison functions
+bool set_equals(set_t* set1, set_t* set2) {
+    if (set1->size != set2->size) {
+        return false;
+    }
+    for (int i = 0; i < set1->size; i++) {
+        if (!set_contains(set2, set1->elements[i])) {
+            return false;
+        }
+    }
+    return true;
 }
 
 collection_t* collection_new() {
@@ -153,7 +168,7 @@ bool collection_contains(collection_t* collection, char* value) {
     return false;
 }
 
-void collection_add(collection_t* collection, char* value) {
+collection_t* collection_add(collection_t* collection, char* value) {
     if (!collection_contains(collection, value)) {
         if(collection->size == collection->capacity) {
             collection->capacity = collection->capacity == 0 ? 1 : collection->capacity * 2;
@@ -171,6 +186,7 @@ void collection_add(collection_t* collection, char* value) {
         strcpy(collection->elements[collection->size], value);
         collection->size++;
     }
+    return collection;
 }
 
 collection_t* collection_from_array(int count, ...) {
@@ -220,16 +236,17 @@ collection_t* collection_difference(collection_t* collection1, collection_t* col
     return result;
 }
 
-void collection_remove(collection_t* collection, char* value) {
+collection_t* collection_remove(collection_t* collection, char* value) {
     for (int i = 0; i < collection->size; i++) {
         if(strcmp(collection->elements[i], value) == 0) {
             for (int j = i; j < collection->size - 1; j++) {
                 collection->elements[j] = collection->elements[j + 1];
             }
             collection->size--;
-            return;
+            return collection;
         }
     }
+    return collection;
 }
 
 void collection_print(collection_t* collection) {
@@ -277,4 +294,17 @@ void* iterator_next(iterator_t* it) {
 void iterator_free(iterator_t* it) {
     // Nothing to free in this simple implementation
     (void)it;
+}
+
+// Collection comparison functions
+bool collection_equals(collection_t* col1, collection_t* col2) {
+    if (col1->size != col2->size) {
+        return false;
+    }
+    for (int i = 0; i < col1->size; i++) {
+        if (!collection_contains(col2, col1->elements[i])) {
+            return false;
+        }
+    }
+    return true;
 }

@@ -5,7 +5,7 @@ if (|s1| > 5)
 else
     output "set is smaller than 5";
 
-if (s1 - 2 - 1 - 3)
+if (|s1 - 2 - 1 - 3 - 4|)
     output "set is not empty";
 else
-    ouput "set is empty";
+    output "set is empty";
